@@ -84,21 +84,6 @@ int main()
 
         HANDLE hThread = CreateRemoteThread(hProc, 0, 0, (LPTHREAD_START_ROUTINE)LoadLibraryA, loc, 0, 0);
 
-        /*while (true) {
-            DWORD dwProcessBase = baseAddr;
-            DWORD dwBaseAddress = dwProcessBase + 0x2A27B94;
-            DWORD buffer = *(DWORD*)dwBaseAddress;
-            DWORD dwOffsets[] = { 0xfc,0x54 };
-            int HP = 0;
-            if (buffer) {
-                buffer = *(DWORD*)(buffer + dwOffsets[0]);
-                if (buffer) {
-                    HP = *(int*)(buffer + dwOffsets[1]);
-                }
-            }
-            std::cout << HP << std::endl;
-        }*/
-
         std::cout << "Dll path allocated at: " << std::hex << loc << std::endl;
         std::cin.get();
 
