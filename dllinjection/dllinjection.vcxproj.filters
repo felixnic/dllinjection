@@ -21,7 +21,7 @@
     <ClCompile Include="dllinjection.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="messagebox.cpp">
+    <ClCompile Include="dllmain.cpp">
       <Filter>Quelldateien\dll</Filter>
     </ClCompile>
   </ItemGroup>
