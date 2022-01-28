@@ -1,28 +1,61 @@
 #include <Windows.h>
-#include <stdio.h>
 #include <numeric>
+#include <TlHelp32.h>
 
-using namespace std;
+DWORD procId = 0;
 
+DWORD GetProcId(const char* procName)
+{
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    if (hSnap != INVALID_HANDLE_VALUE)
+    {
+        PROCESSENTRY32 procEntry;
+        procEntry.dwSize = sizeof(procEntry);
+
+        if (Process32First(hSnap, &procEntry))
+        {
+            do
+            {
+                if (!_stricmp(procEntry.szExeFile, procName))
+                {
+                    procId = procEntry.th32ProcessID;
+                    break;
+                }
+            } while (Process32Next(hSnap, &procEntry));
+        }
+    }
+    CloseHandle(hSnap);
+    return procId;
+}
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
-    DWORD dwProcessBase = (DWORD)GetModuleHandle(NULL);
-    DWORD dwBaseAddress = dwProcessBase + 0x2A27B94;
-    DWORD dwOffset[] = { 0xfc,0x54 };
+    //Offsets sind leider nicht richtig, da diese sich pro update ändern. Deshalb wird in der Messagebox auch nur 0 ausgegeben.
+    DWORD ProcessBase = (DWORD)GetModuleHandle(NULL);
+    DWORD BaseAddress = ProcessBase + 0x2A27B94;
+    DWORD Offset[] = { 0xfc,0x54 };
 
-    int Health = *(int*)(*(DWORD*)(*(DWORD*)dwProcessBase + dwOffset[0]) + dwOffset[1]);
+    const char* procName = "League of Legends.exe";
+    DWORD procId = 0;
 
-    int index1 = 1;
+    int healthAddress = BaseAddress + Offset[0] + Offset[1];
+    int health = 0;
+
+    HANDLE pHandle = OpenProcess(PROCESS_VM_READ, FALSE, procId);
+
+    ReadProcessMemory(pHandle, (LPVOID)healthAddress, &health, sizeof(int), NULL);
+
+    //int wird in char convertiert, um die Zahl in der Messagebox ausgeben zu können.
+    int ophealth = health;
     char buf[10];
-    _itoa_s(index1, buf, 10);
+    _itoa_s(ophealth, buf, 10);
     MessageBox(NULL, buf, "Heal", MB_OK);
 
-    /*if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+    /* if (ul_reason_for_call == DLL_PROCESS_ATTACH)
         MessageBox(0, L"Hello I am Felix!", L"Hello", MB_ICONINFORMATION);
 
-    return TRUE;*/
+        return TRUE;*/
 }
-
 
 
