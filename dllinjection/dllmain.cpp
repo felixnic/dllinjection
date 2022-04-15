@@ -2,33 +2,6 @@
 #include <numeric>
 #include <TlHelp32.h>
 
-DWORD procId = 0;
-
-DWORD GetProcId(const char* procName)
-{
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-    if (hSnap != INVALID_HANDLE_VALUE)
-    {
-        PROCESSENTRY32 procEntry;
-        procEntry.dwSize = sizeof(procEntry);
-
-        if (Process32First(hSnap, &procEntry))
-        {
-            do
-            {
-                if (!_stricmp(procEntry.szExeFile, procName))
-                {
-                    procId = procEntry.th32ProcessID;
-                    break;
-                }
-            } while (Process32Next(hSnap, &procEntry));
-        }
-    }
-    CloseHandle(hSnap);
-    return procId;
-}
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
     //Offsets sind leider nicht richtig, da diese sich pro update ändern. Deshalb wird in der Messagebox auch nur 0 ausgegeben.
