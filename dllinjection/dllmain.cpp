@@ -7,7 +7,8 @@ using namespace std;
 
 void mainHack();
 
-#define DEFINE_RVA(address) ((DWORD)address)
+#define baseAddress (DWORD)GetModuleHandleA(NULL)
+#define DEFINE_RVA(address) (baseAddress + (DWORD)address)
 
 BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
@@ -61,25 +62,24 @@ void CastSpell(SpellSlot slot, CastType castType);
 void mainHack()
 {
 	/*AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-	cout << "We Can Use Console For Debugging!\n";*/
+	freopen("CONOUT$", "w", stdout);*/
 
-	DWORD BaseAddress = (DWORD)GetModuleHandle(NULL);
-	DWORD* localPlayer = (DWORD*)(BaseAddress + 0x30F5BBC);
+	DWORD* localPlayer = (DWORD*)(baseAddress + 0x30F5BBC);
 	float* health = (float*)(*localPlayer + 0xDB4);
 
 	/*std::cout << 100;
 	std::cout << *health;
 	std::cout << 100;*/
+	bool finished = false;
 
-	while (true)
+	do
 	{
 		if (*health < 300)
 		{
 			CastSpell(SpellSlot::Summoner1, CastType::SelfCastSpell);
+			finished = true;
 		}
-	}
-
+	} while (finished == false);
 }
 
 void CastSpell(SpellSlot slot, CastType castType)
