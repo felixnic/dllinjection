@@ -2,27 +2,11 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <string>
-#include <conio.h>
 
 using namespace std;
 
 DWORD procId = 0;
 DWORD baseAddr = 0;
-
-string chooseDLL()
-{
-    //Hier wird der Explorer geöffnet, der das auswählen des DLL-Files ermöglicht
-    OPENFILENAME ofn;
-    char filename[MAX_PATH] = "";
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.lpstrFile = filename;
-    ofn.nMaxFile = MAX_PATH;
-    if (GetOpenFileName(&ofn))
-    {
-        return filename;
-    }
-}
 
 //In dieser Methode wird die ProcessId herausgefunden
 DWORD GetProcId(const char* procName)
@@ -52,32 +36,15 @@ DWORD GetProcId(const char* procName)
 
 int main()
 {
-    cout << "Welcome to our DLL-Injector. Make sure you already opened --> League of Legends.exe" << endl;
-    cout << "Press enter to choose your DLL" << endl;
-    //_getch() wartet auf einen beliebigen Tastenanschlag bevor es weitergeht
-    _getch();
-
-    string stringpath = chooseDLL();
-
     //Gibt den Path des Dll file an
-    //const char* dllPath = "C:\\Users\\felix\\source\\repos\\dlltest\\Debug\\dlltest.dll";
-    const char* dllPath = stringpath.c_str();
-    cout << "You chose " << dllPath << endl;
-
-    //Hier wird ein Delay von 1er Sekunde gesetzt
-    Sleep(1000);
-
-    cout << "Press enter to inject!" << endl;
-    _getch();
-
-    cout << "Injected!" << endl;
-    cout << "" << endl;
+    /*const char* dllPath = "C:\\Users\\felix\\Desktop\\dlltest.dll";*/
+    const char* dllPath = "C:\\Users\\felix\\source\\repos\\dlltest\\Debug\\dlltest.dll";
 
     //procName wird an die Methode GetProcId übergeben
     const char* procName = "League of Legends.exe";
     DWORD procId = 0;
     DWORD baseAddr = 0;
-
+    
     while (!procId)
     {
         //Methode GetProcId wird aufgerufen
@@ -97,7 +64,7 @@ int main()
         {
             //Nun wird der Path in den Ram geschrieben
             WriteProcessMemory(hProc, loc, dllPath, strlen(dllPath) + 1, 0);
-        }
+        }   
 
         HANDLE hThread = CreateRemoteThread(hProc, 0, 0, (LPTHREAD_START_ROUTINE)LoadLibraryA, loc, 0, 0);
 
