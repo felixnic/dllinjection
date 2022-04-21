@@ -8,13 +8,16 @@ using namespace std;
 void mainHack();
 
 #define baseAddress (DWORD)GetModuleHandleA(NULL)
+//Das ist eine Macro die zu der eingegebenen Addresse automatisch die baseAddress addiert.
 #define DEFINE_RVA(address) (baseAddress + (DWORD)address)
 
 BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	if (dwReason == DLL_PROCESS_ATTACH) {
-		DisableThreadLibraryCalls(hModule);		//disables attach and detach notifications
-		CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)mainHack, NULL, NULL, NULL);	//creates a new thread and starts at function mainHack()
+		//Deaktiviert DLL_THREAD_ATTACH und DLL_THREAD_DETACH Benachrichtigungen
+		DisableThreadLibraryCalls(hModule);		
+		//Erstellt einen neuen Thread und startet die mainHack Funktion
+		CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)mainHack, NULL, NULL, NULL);
 	}
 	else if (dwReason == DLL_PROCESS_DETACH) {
 
@@ -22,12 +25,7 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 	return TRUE;
 }
 
-enum class Offsets
-{
-	NewCastSpell = 0x5E5050,
-	HudInstance = 0x24a4bc0
-};
-
+//Alle SpellSlots, die es in League of Legends gibt --> Localplayer
 enum class SpellSlot
 {
 	Invalid = -1,
@@ -47,6 +45,8 @@ enum class SpellSlot
 	Recall
 };
 
+//Alle Arten von Spellcasts in League of Legends --> vom Cheatforum
+//Wir verwenden in unserem Fall SelfCast.
 enum class CastType
 {
 	NormalCastSpell = 1,
@@ -57,38 +57,39 @@ enum class CastType
 	QuickCastWithIndicatorOrSelfCastSpell = 6,
 };
 
-void CastSpell(SpellSlot slot, CastType castType);
+//Diese Methode ist für den Healspell cast verantwortlich.
+void CastSpell(SpellSlot slot, CastType castType)
+{
+	typedef void(__thiscall* fnnewcastspell)(DWORD hudinstance, SpellSlot spellIndex, CastType castType, float a4);
+	//NewCastSpell = 0x5E5050
+	static fnnewcastspell CastSpell = (fnnewcastspell)(DEFINE_RVA(0x5E5050));
+
+	//HudInstance = 0x24a4bc0
+	DWORD HUDInputLogic = *(DWORD*)(*(DWORD*)DEFINE_RVA(0x24a4bc0) + 0x34);
+	CastSpell(HUDInputLogic, slot, castType, 0.0f);
+}
 
 void mainHack()
 {
-	/*AllocConsole();
-	freopen("CONOUT$", "w", stdout);*/
-
+	//Pointet auf die health address --> *health = value
 	DWORD* localPlayer = (DWORD*)(baseAddress + 0x30F5BBC);
+	//health offset = 0xDB4
 	float* health = (float*)(*localPlayer + 0xDB4);
 
-	/*std::cout << 100;
-	std::cout << *health;
-	std::cout << 100;*/
 	bool finished = false;
-
+	
 	do
 	{
+		//Wenn der Spieler weniger als 300 Leben hat, wird der Spell aktiviert.
 		if (*health < 300)
 		{
+			//Methode wird aufgerufen und der boolean auf true gesetzt.
 			CastSpell(SpellSlot::Summoner1, CastType::SelfCastSpell);
 			finished = true;
 		}
 	} while (finished == false);
 }
 
-void CastSpell(SpellSlot slot, CastType castType)
-{
-	typedef void(__thiscall* fnnewcastspell)(DWORD hudinstance, SpellSlot spellIndex, CastType castType, float a4);
-	static fnnewcastspell CastSpell = (fnnewcastspell)(DEFINE_RVA(Offsets::NewCastSpell));
 
-	DWORD HUDInputLogic = *(DWORD*)(*(DWORD*)DEFINE_RVA(Offsets::HudInstance) + 0x34);
-	CastSpell(HUDInputLogic, slot, castType, 0.0f);
-}
 
 
