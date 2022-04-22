@@ -46,7 +46,7 @@ enum class SpellSlot
 };
 
 //Alle Arten von Spellcasts in League of Legends --> vom Cheatforum
-//Wir verwenden in unserem Fall SelfCast.
+//Wir verwenden in unserem Fall QuickCastSpell.
 enum class CastType
 {
 	NormalCastSpell = 1,
@@ -57,7 +57,7 @@ enum class CastType
 	QuickCastWithIndicatorOrSelfCastSpell = 6,
 };
 
-//Diese Methode ist für den Healspell cast verantwortlich.
+//Diese Methode ist fÃ¼r den Healspell cast verantwortlich.
 void CastSpell(SpellSlot slot, CastType castType)
 {
 	typedef void(__thiscall* fnnewcastspell)(DWORD hudinstance, SpellSlot spellIndex, CastType castType, float a4);
@@ -84,7 +84,7 @@ void mainHack()
 		if (*health < 300)
 		{
 			//Methode wird aufgerufen und der boolean auf true gesetzt.
-			CastSpell(SpellSlot::Summoner1, CastType::SelfCastSpell);
+			CastSpell(SpellSlot::Summoner1, CastType::QuickCastSpell);
 			finished = true;
 		}
 	} while (finished == false);
